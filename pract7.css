@@ -50,7 +50,7 @@
 
 
 
-      .loader {
+      /* .loader {
       width: 200px;
       height: 200px;
       border-radius: 50%;
@@ -58,6 +58,8 @@
       border-top: 20px solid grey;
       animation: spinAnimate 2s ease-in-out 0s infinite normal;
       }
+
+
 
 
       @keyframes spinAnimate {
@@ -68,7 +70,7 @@
             transform: rotate(360deg);
         }
 
-      }
+      } */
 
 
 
