@@ -1,167 +1,383 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CSS level 2</title>
-   
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Quiz App</title>
+<style>
+  /* ===== Basic Reset ===== */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+  }
 
-<h1>Display playground</h1>
-<div id="box 1">box 1</div>
-<div id="box 2">box 2</div>
-<div id="box 3">box 3</div>
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+
+  .quiz-container {
+    background: #fff;
+    width: 100%;
+    max-width: 550px;
+    border-radius: 15px;
+    padding: 35px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  }
+
+  h1 {
+    text-align: center;
+    color: #1e3c72;
+    margin-bottom: 20px;
+    font-size: 28px;
+  }
+
+  /* ===== Top Bar (Score + Timer) ===== */
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 12px 15px;
+    background: #f0f4ff;
+    border-radius: 8px;
+    font-weight: bold;
+    color: #1e3c72;
+  }
+
+  .timer {
+    color: #e74c3c;
+  }
+
+  /* ===== Question Section ===== */
+  .question-num {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .question {
+    font-size: 19px;
+    color: #333;
+    margin-bottom: 20px;
+    line-height: 1.5;
+    min-height: 60px;
+  }
+
+  /* ===== Options ===== */
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .option {
+    padding: 14px 18px;
+    background: #f9f9f9;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    text-align: left;
+    transition: all 0.3s;
+    color: #333;
+  }
+
+  .option:hover:not(:disabled) {
+    background: #e8eeff;
+    border-color: #2a5298;
+    transform: translateX(5px);
+  }
+
+  .option.correct {
+    background: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+  }
+
+  .option.wrong {
+    background: #f8d7da;
+    border-color: #dc3545;
+    color: #721c24;
+  }
+
+  .option:disabled {
+    cursor: not-allowed;
+  }
+
+  /* ===== Next Button ===== */
+  #nextBtn {
+    width: 100%;
+    padding: 13px;
+    background: #2a5298;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  #nextBtn:hover {
+    background: #1e3c72;
+  }
+
+  #nextBtn:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+  }
+
+  /* ===== Result Screen ===== */
+  .result {
+    text-align: center;
+  }
+
+  .result h2 {
+    color: #2a5298;
+    font-size: 26px;
+    margin-bottom: 15px;
+  }
+
+  .result .final-score {
+    font-size: 48px;
+    color: #1e3c72;
+    font-weight: bold;
+    margin: 20px 0;
+  }
+
+  .result p {
+    color: #666;
+    margin-bottom: 25px;
+    font-size: 16px;
+  }
+
+  #restartBtn {
+    padding: 12px 30px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  #restartBtn:hover {
+    background: #218838;
+  }
+
+  .hide {
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="quiz-container">
+  <h1>🧠 Quiz Time!</h1>
+
+
+  <div id="quizScreen">
+    <div class="top-bar">
+      <span>Score: <span id="score">0</span></span>
+      <span class="timer">⏱ <span id="timer">15</span>s</span>
+    </div>
+
+    <p class="question-num" id="questionNum">Question 1 of 5</p>
+    <h2 class="question" id="question"></h2>
+
+    <div class="options" id="options"></div>
+
+    <button id="nextBtn" onclick="nextQuestion()" disabled>Next Question</button>
+  </div>
+
+<!-- //on latter -->
+  <div id="resultScreen" class="result hide">
+    <h2>🎉 Quiz Complete!</h2>
+    <div class="final-score" id="finalScore">0 / 5</div>
+    <p id="resultMsg"></p>
+    <button id="restartBtn" onclick="restartQuiz()">Play Again</button>
+  </div>
+</div>
+
+<script>
+
+  const questions = [
+    {
+      question: "HTML ka full form kya hai?",
+      options: [
+        "Hyper Text Markup Language",
+        "High Text Machine Language",
+        "Hyper Tabular Markup Language",
+        "Home Tool Markup Language"
+      ],
+      answer: 0   
+    },
+    {
+      question: "CSS me color change karne ke liye kaunsi property use hoti hai?",
+      options: ["font-color", "text-color", "color", "background"],
+      answer: 2
+    },
+    {
+      question: "JavaScript me variable declare karne ke liye kaunsa keyword use hota hai?",
+      options: ["var", "int", "string", "declare"],
+      answer: 0
+    },
+    {
+      question: "Kaunsa HTML tag sabse bada heading banata hai?",
+      options: ["<h6>", "<heading>", "<h1>", "<head>"],
+      answer: 2
+    },
+    {
+      question: "JavaScript me array ki length kaise pata karte hain?",
+      options: ["array.size()", "array.length", "array.count", "length(array)"],
+      answer: 1
+    }
+  ];
+
+
+  let currentQuestion = 0;
+  let score = 0;
+  let timeLeft = 15;
+  let timerInterval;
+  let answered = false;
+
+
+  window.onload = function() {
+    loadQuestion();
+  };
+
+  // function loadQuestion(){
+  //   answered=false
+  //   timeLeft=15
+  
+  // }
+  // loadQuestion()
+
+
+  function loadQuestion() {
+    answered = false;
+    timeLeft = 15;
+    // document.getElementById('timer').textContent = timeLeft;
+      document.querySelector("#timer").textContent=timeLeft
+        document.getElementById('nextBtn').disabled = true;
+            const q = questions[currentQuestion];
+    document.getElementById('questionNum').textContent =
+      `Question ${currentQuestion + 1} of ${questions.length}`;
+    document.getElementById('question').textContent = q.question;
+
+
+
+
+
+    const optionsDiv = document.getElementById('options');
+    optionsDiv.innerHTML = '';
+
+    q.options.forEach((option, index) => {
+      const btn = document.createElement('button');
+      btn.className = 'option';
+      btn.textContent = option;
+      btn.onclick = () => checkAnswer(index, btn);
+      optionsDiv.appendChild(btn);
+    });
+
+    startTimer();
+  }
+
+
+  function startTimer() {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      document.getElementById('timer').textContent = timeLeft;
+
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        timeUp();
+      }
+    }, 1000);
+  }
+
+
+  function checkAnswer(selectedIndex, btn) {
+    if (answered) return;    
+    answered = true;
+    clearInterval(timerInterval);
+
+    const correctIndex = questions[currentQuestion].answer;
+    const allOptions = document.querySelectorAll('.option');
+
+
+    allOptions.forEach(o => o.disabled = true);
+
+    if (selectedIndex === correctIndex) {
+      btn.classList.add('correct');
+      score++;
+      document.getElementById('score').textContent = score;
+    } else {
+      btn.classList.add('wrong');
+
+      allOptions[correctIndex].classList.add('correct');
+    }
+
+    document.getElementById('nextBtn').disabled = false;
+  }
+
+
+  function timeUp() {
+    answered = true;
+    const correctIndex = questions[currentQuestion].answer;
+    const allOptions = document.querySelectorAll('.option');
+
+    allOptions.forEach(o => o.disabled = true);
+    allOptions[correctIndex].classList.add('correct');
+    document.getElementById('nextBtn').disabled = false;
+  }
+
+
+  function nextQuestion() {
+    currentQuestion++;
+    if (currentQuestion < questions.length) {
+      loadQuestion();
+    } else {
+      showResult();
+    }
+  }
+
+
+  function showResult() {
+    document.getElementById('quizScreen').classList.add('hide');
+    document.getElementById('resultScreen').classList.remove('hide');
+
+    document.getElementById('finalScore').textContent = `${score} / ${questions.length}`;
+
+
+    let msg = '';
+    const percent = (score / questions.length) * 100;
+    if (percent === 100) msg = "Perfect score! 🏆 Tu toh genius hai!";
+    else if (percent >= 60) msg = "Great job! 👏 Acchhi performance.";
+    else if (percent >= 40) msg = "Not bad! Thoda aur practice kar. 💪";
+    else msg = "Don't worry, agli baar better karega! 📚";
+
+    document.getElementById('resultMsg').textContent = msg;
+  }
+
+
+  function restartQuiz() {
+    currentQuestion = 0;
+    score = 0;
+    document.getElementById('score').textContent = 0;
+    document.getElementById('resultScreen').classList.add('hide');
+    document.getElementById('quizScreen').classList.remove('hide');
+    loadQuestion();
+  }
+</script>
 
 </body>
 </html>
-
-<!-- <h1>Heading</h1>
-   <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Fugit, quam. Consequatur omnis assumenda id placeat cum iure, corrupti earum perspiciatis sed maxime ad asperiores vitae! Quod accusamus fugiat nihil tenetur?</p>
-     <button>Click Me</button>
-     <br> -->
-     <!-- <div> Div1</div>
-     <br>
-     <div>Div2</div>
-     <br>
-     <div>Div3</div> -->
-   <!-- <p id="one">Lorem ipsum dolor sit amet consectetur adipisicing elit. Qui, consequuntur tempore, totam molestias distinctio error dolorum exercitationem fugit ipsa mollitia earum, eligendi alias nemo eveniet sed enim dicta dolorem doloremque.</p> -->
-   <!-- <p id="two">parah2</p> -->
-   <!-- <p id="three">parah3</p> -->
-
-    <!--◉ NOTES FOR CSS -->
-    <!--◉ Basic Syntax
-    Selector
-       h1{
-        color:red;
-         color is property and red is value
-       } -->
-         <!-- ◉ include style 
-         ✧ inline 
-         <h1 style ="color:red;">Anshul Sonkar</h1>
-
-         ✧ <style>tag 
-         <style>
-            h1{
-                color:red;
-            }
-            </style> -->
-            
-            <!--◉ including style 
-              ✧ external stylesheet
-               
-            ✧ writing css in a separate document & linking it wih HTML -->
-
-               <!-- ✧ Color Property
-
-               ✧ Used to set the color of foeground
-
-               ✧color :red;
-               ✧color :pink;
-               ✧color :blue;
-               ✧color :green; -->
-
-               <!-- ◉ Background Color Property
-                   
-                  ✧ Used to set the color of Background
-
-                  ✧ background-color : red;
-                  ✧ background-color : pink;
-                  ✧ background-color : blue;
-                  ✧ background-color : green; -->
-                    
-                  <!-- ◉ Color Systems--> <!--tpes>>>1.RGB 2.Hax 3.HSLA many more we will use RGB,Hax....-->
-
-                      <!-- ✧ RGB
-                         ✧ color: rgb(255,0,0);
-                         ✧ color: rgb(0,255,0);-->
-                         
-                         <!--◉ color systems 
-                          ✧ Hex (Hexadecimal)    
-                           ✧color: #ff0000;
-                           ✧color: #00ff00;-->
-
-                           <!--✧ universal Selector  = select all text 
-                               ✧ elment Selector = selects all element
-                               ✧ ID selector = #myID{} 
-                               ✧ class Selector = .myClass{} -->
-
-                               <!-- ◉ Text properties 
-                                ✧ text-align : left / right /center
-
-                                ✧ text decoration : underline / overline / line-through
-                            
-                                ◉ font-family
-                                font-family : arial
-                                font-family : arial,roboto<h1 id="headingone">This is a heading</h1>
-<h1 id="headingtwo">This is a heading</h1>
-<h1 class="myClass">This is a heading</h1>
-<p class="myClass">This is a simple & normal paragraph</p>
-<button>click me</button> -->
-                      <!--◉ font-weight
-                      ✧ font-weight : normal / bold/ lighter
-                      ✧ font-weight : 100-900
-                      ◉ units in css 
-                          ✧ pixels (px)
-                            ✧ 96px = 1 inch = 2.54cm
-                            ✧ font-size : px
-
-                ◉ text property 
-                   ✧line-height : 20px ;
-                      text-transform : upprrcase / lowercase / capitalize / none
-                  
-              ◉ Box model in css
-                ✧ height
-                ✧ width
-                ✧ Border 
-                ✧ padding 
-                ✧ margin 
-              ◉ Border 
-                ✧ shorthand
-                   border : 2px solid black;
-              ◉ padding
-                
-                ✧ padding-left 
-                ✧ padding-right
-                ✧ padding-top
-                ✧ padding-bottom
-              
-              ◉ padding 
-                ✧ shorthand
-                 
-                ✧ padding : 50px;
-
-                ◉ padding : 1px   2px     3px      4px ;
-                             top | right | bottom | left-> clockwise
-               
-              ◉ Margin 
-
-                ✧ margin-right
-                ✧ margin-left
-                ✧ margin-top
-                ✧ margin-bottom
-              ◉ Display proprtey
-                display: inline / block / inline-block / none
-                
-               ✧ inline - Takes only the space required by the element.(no margin/padding)
-               ✧ block - Takes full space available in width.
-               ✧ inline-block - similar to inline but we can set margin & padding.
-               ✧ none - To remove element from documnet flow.
-               Alpha channel 
-               Opacity (0 to 1)
-               RGBA 
-               color: rgba(255,0,0,0.5);
-               color: rgba(255,0,0,1);
-
-
-
-
-              -->
-  <!-- <body>
-  <div id="navbar">
-       <a id="logo">amazon.in</a>
-       <a href="#">Account</a>
-       <a href="#">My Cart</a>
-       <a href="#">Contact Us</a>
-     <input placeholder="Search Amazon.in">
-     <button>Search</button>
-</div> -->
